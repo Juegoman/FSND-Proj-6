@@ -2,12 +2,27 @@
 <html>
   <head>
     <title>Neighborhood Map</title>
+    <meta charset="utf-8">
     <link rel="stylesheet" href="css/styles.css">
   </head>
   <body>
-    Hello World!
+    <div class="row">
+      <div class="sidebar">
+        <div class="button-holder">
+          <div class="sidebar-btn-label hidden">Places in Phoenix</div>
+          <button class="expand" id="sidebar-btn">&gt;</button>
+        </div>
+        <hr>
+        <div class="list-container">
+        </div>
+      </div>
+      <div id="map" class="map"></div>
+    </div>
     <script type="text/javascript" src="bower_components/jquery/dist/jquery.min.js"></script>
     <script type="text/javascript" src="bower_components/knockout/dist/knockout.js"></script>
-    <script type="text/javascript" src="js/app.js"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD9LSGHZU7MshahOE0uqR0kJ7kCeAk-Fvg&callback=app.initMap"
+    async defer></script>
+    <script type="text/javascript" src="js/map.js"></script>
+    <script type="text/javascript" src="js/anim.js"></script>
   </body>
 </html>
