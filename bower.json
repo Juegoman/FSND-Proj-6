@@ -1,0 +1,22 @@
+{
+  "name": "Neighborhood Map",
+  "homepage": "https://github.com/Juegoman/FSND-Proj-6",
+  "authors": [
+    "Ruben Gallegos <gallegos_ruben@yahoo.com>"
+  ],
+  "description": "An interactive map of a location with points of interest.",
+  "main": "",
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "knockout": "^3.4.0",
+    "jquery": "^3.1.0"
+  }
+}
