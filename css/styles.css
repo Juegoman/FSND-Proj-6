@@ -28,9 +28,40 @@ html, body {
   text-align: right;
 }
 
+.list-container {
+  border-top: 1px white solid;
+  margin-top: .33em;
+}
+
+.location-link {
+  color: white;
+  text-decoration: none;
+}
+
+.location-item {
+  margin: 0;
+  padding: .33em;
+  border-bottom: 1px white solid;
+}
+
+.location-name {
+  margin: 0;
+}
+
+.location-description {
+  margin: 0;
+}
+
+.filter-label {
+  margin: 0;
+  font-weight: normal;
+}
+
 .sidebar-btn-label {
   color: white;
-  font-size: 2.5em;
+  font-size: 2em;
+  font-weight: normal;
+  margin: .33em;
   float: left;
 }
 
@@ -47,8 +78,25 @@ html, body {
   padding: 1px 7px 1px 9px;
 }
 
+.filter-btn {
+  height: 45px;
+  min-width: 45px;
+  border-radius: 5px;
+  background-color: #111;
+  color: white;
+  border: 1px white solid;
+}
+
+.selected {
+  background-color: #08F;
+}
+
 .map {
   height: 100%;
   width: 95%;
   transition: width 1s;
+}
+
+.white-text {
+  color: white;
 }
