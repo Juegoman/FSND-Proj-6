@@ -17,11 +17,12 @@ html, body {
 
 .sidebar {
   height: 100%;
-  min-width: 60px;
+  min-width: 75px;
   width: 5%;
   background-color: #111;
   text-align: center;
   transition: width 1s;
+  overflow-y: scroll;
 }
 
 .button-holder {
@@ -59,10 +60,14 @@ html, body {
 
 .sidebar-btn-label {
   color: white;
-  font-size: 2em;
+  font-size: 1.5em;
   font-weight: normal;
   margin: .33em;
   float: left;
+}
+
+.place-img {
+  width: 100%;
 }
 
 .expand {
@@ -99,4 +104,43 @@ html, body {
 
 .white-text {
   color: white;
+}
+
+.expanded {
+  width: 30%;
+}
+
+.sidebar-expanded {
+  width: 70%;
+}
+
+@media screen and (max-width: 990px) {
+  .expanded {
+    width: 40%;
+  }
+
+  .sidebar-expanded {
+    width: 60%;
+  }
+
+  .location-name {
+    font-size: 1.2em;
+  }
+  .location-description {
+    font-size: .8em;
+  }
+}
+
+@media screen and (max-width: 500px) {
+  .expanded {
+    width: 80%;
+  }
+
+  .sidebar-expanded {
+    width: 20%;
+  }
+
+  .sidebar-btn-label {
+    font-size: 1.2em;
+  }
 }

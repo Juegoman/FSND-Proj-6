@@ -3,6 +3,7 @@
   <head>
     <title>Neighborhood Map</title>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable-yes">
     <link rel="stylesheet" href="css/styles.css">
   </head>
   <body>
@@ -39,7 +40,7 @@
         </div>
         <div class="list-container hidden" data-bind="foreach: filteredLocList">
           <a href="#" class="location-link" data-bind="click: $parent.changeLocation">
-            <div class="location-item">
+            <div class="location-item" data-bind="css: { selected: $parent.selectedLoc() == $data }">
               <h2 class="location-name" data-bind="text: name"></h2>
               <p class="location-description" data-bind="text: description"></p>
             </div>
