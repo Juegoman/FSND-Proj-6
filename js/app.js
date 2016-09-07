@@ -45,6 +45,8 @@ var LocList = [
   app.FRSQ_CID = 'FZSJJKJ5WDHLHR2CSL5RJG3XK4CZTI4OQ3OE5FLHO4XCTB4M';
   app.FRSQ_SEC = 'SSMWU1PC2YJXYBMVKYMRE5GCOE33T5HLN1VMIGPWYJIHQDUL';
 
+  app.googleLoaded = false;
+
   //object to represent a location
   app.Location = function(data) {
     this.name = ko.observable(data.name);
@@ -52,7 +54,10 @@ var LocList = [
     this.description = ko.observable(data.description);
     this.category = ko.observable(data.category);
 
-    this.marker = null;
+    //create the marker for the current location and add it to the location object if the Google Map successfully loaded.
+    if (app.googleLoaded) {
+      this.marker = app.addMarker(this);
+    }
   };
   //ViewModel object
   app.ViewModel = function() {
@@ -63,58 +68,77 @@ var LocList = [
     this.selectedLoc = ko.observable();
     this.selectedFilter = ko.observable();
 
+    //observables for the expanding sidebar
+    this.sidebarExpanded = ko.observable(false);
+    this.sidebarBtnTxt = ko.pureComputed(function() {
+      if (self.sidebarExpanded()) return '<';
+      else return '>';
+    });
+
     //initialize the list of Locations
     LocList.forEach(function(location) {
-      var loc = new app.Location(location);
-      //create the marker for the current location and add it to the location object.
-      var marker = app.addMarker(loc);
-      marker.addListener('click', function() {
-        self.changeLocation(loc);
-      });
-      loc.marker = marker;
+      var loc = new app.Location(location, self);
+      if (app.googleLoaded) {
+          loc.marker.addListener('click', function(data) {
+          self.changeLocation(loc);
+        });
+      }
       self.locList.push(loc);
     });
 
     //handler for changing the selected location.
     this.changeLocation = function(loc) {
-      //clean up
-      app.infoWindow.close();
-      if (self.selectedLoc()) self.selectedLoc().marker.setAnimation(null);
+      //clean up if the Google Map successfully loaded.
+      if (app.googleLoaded) {
+        app.infoWindow.close();
+        if (self.selectedLoc()) self.selectedLoc().marker.setAnimation(null);
+      }
       //set the new location
       self.selectedLoc(loc);
-      if (self.selectedLoc()) {
-        //make the selected location's marker bounce and open the infoWindow
+      //animate the marker and open the infoWindow if the Google Map successfully loaded.
+      if (app.googleLoaded && self.selectedLoc()) {
+        //make the selected location's marker bounce and open the infoWindow on the marker.
         self.selectedLoc().marker.setAnimation(google.maps.Animation.BOUNCE);
-        app.setInfoWindow(loc).open(app.Map);
+        app.setInfoWindow(loc).open(app.Map, self.selectedLoc().marker);
         setTimeout(function() {
           self.selectedLoc().marker.setAnimation(null);
         }, 2100);
+      } else if (self.selectedLoc()) {
+        //otherwise just open information about the selected location.
+        app.setInfoWindow(loc);
       }
     };
 
     //handler for changing the filter
     this.setFilter = function(filter) {
       //clean up
-      app.infoWindow.close();
+      if (app.googleLoaded) app.infoWindow.close();
       self.selectedLoc(null);
       //set the filter
       self.selectedFilter(filter);
       //reset the filtered location list
       self.filteredLocList.removeAll();
       self.locList().forEach(function(location) {
-        location.marker.setMap(null);
+        if (app.googleLoaded) location.marker.setVisible(false);
         if (self.selectedFilter() === "all" || location.category() === self.selectedFilter()) {
-          location.marker.setMap(app.Map);
-          location.marker.setAnimation(google.maps.Animation.DROP);
+          if (app.googleLoaded) {
+            location.marker.setVisible(true);
+            location.marker.setAnimation(google.maps.Animation.DROP);
+          }
           self.filteredLocList.push(location);
         }
       });
+    };
+
+    //handler for expanding the sidebar
+    this.expandSidebar = function() {
+      self.sidebarExpanded(!self.sidebarExpanded());
     };
   };
   //helper function for handling the populating of infoWindow data with AJAX calls
   app.setInfoWindow = function(location) {
     //base case: the category of the location is invalid
-    var contentStr = '<em>Error recovering API information: invalid category</em>';
+    var contentStr = '<em>Loading...</em>';
     var url = '';
     //check if the location should be queried on Foursquare
     if (location.category() === 'food' || location.category() === 'recreation') {
@@ -148,7 +172,7 @@ var LocList = [
               if (venue.canonicalUrl) venueUrl = venue.canonicalUrl + '?ref=' + app.FRSQ_CID;
               if (venue.description) venDescription = venue.description;
               if (venue.rating) rating = venue.rating;
-              if (venue.bestPhoto) imgUrl = venue.bestPhoto.prefix + '500x300' + venue.bestPhoto.suffix;
+              if (venue.bestPhoto) imgUrl = venue.bestPhoto.prefix + '300x200' + venue.bestPhoto.suffix;
 
               //build the info window based on information that is present.
               contentStr = '' +
@@ -166,13 +190,13 @@ var LocList = [
               if (imgUrl) contentStr = contentStr + '<img class="place-img" src="' + imgUrl + '">';
               contentStr = contentStr + '<em>provided by Foursquare</em></div>';
               //apply the now downloaded content
-              app.infoWindow.setContent(contentStr);
+              app.applyInfoWindow(contentStr);
             },
             error: function(e) {
               //apply the error
               contentStr = '<em>Error recovering API information: invalid ID returned.</em>';
               console.error(e);
-              app.infoWindow.setContent(contentStr);
+              app.applyInfoWindow(contentStr);
             }
           });
         },
@@ -180,7 +204,7 @@ var LocList = [
           //apply the error
           console.error(e);
           contentStr = '<em>Error recovering API information: invalid ID returned.</em>';
-          app.infoWindow.setContent(contentStr);
+          app.applyInfoWindow(contentStr);
         }
       });
     } else if (location.category() === 'education') {
@@ -189,7 +213,7 @@ var LocList = [
 
       var extract = null;
       var articleUrl = 'https://en.wikipedia.org/wiki/' + location.name().replace(' ', '_');
-      var streetViewUrl = 'http://maps.googleapis.com/maps/api/streetview?size=500x300&location=' + location.coords().lat + ',' + location.coords().lng;
+      var streetViewUrl = 'http://maps.googleapis.com/maps/api/streetview?size=300x200&location=' + location.coords().lat + ',' + location.coords().lng;
       $.ajax(wikiUrl, {
         dataType: "jsonp",
         success: function(data) {
@@ -213,25 +237,40 @@ var LocList = [
           '</div>';
 
           //apply the content
-          app.infoWindow.setContent(contentStr);
+          app.applyInfoWindow(contentStr);
         },
         error: function(e) {
           //apply the error.
           console.error(e);
           contentStr = '<em>Error recovering API information: Query error.</em>';
-          app.infoWindow.setContent(contentStr);
+          app.applyInfoWindow(contentStr);
         }
       });
+    } else {
+      console.error("Invalid Category.");
+      contentStr = '<em>Error recovering API information: Invalid category.</em>';
+      app.applyInfoWindow(contentStr);
     }
-    //place the infoWindow on the appropriate marker and add the base message.
-    var latlng = new google.maps.LatLng(location.coords().lat,
-                                        location.coords().lng);
-    app.infoWindow.setOptions({
-      content: contentStr,
-      position: latlng
-    });
-    return app.infoWindow;
+    //Add the base message to the infoWindow.
+    app.applyInfoWindow(contentStr);
+    if (app.googleLoaded) return app.infoWindow;
   };
 
-  ko.applyBindings(new app.ViewModel());
+  app.applyInfoWindow = function(content) {
+    if (app.googleLoaded) {
+      app.infoWindow.setContent(content);
+    } else {
+      $('#map').html('').append(content);
+    }
+  };
+
+  app.mapLoaded = function() {
+    app.googleLoaded = true;
+    ko.applyBindings(new app.ViewModel());
+  };
+
+  app.googleError = function() {
+    console.error("Failed to download Google Maps API.");
+    ko.applyBindings(new app.ViewModel());
+  };
 })(app);
