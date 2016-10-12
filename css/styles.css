@@ -106,22 +106,30 @@ html, body {
   color: white;
 }
 
-.expanded {
+.sidebar.expanded {
   width: 30%;
 }
 
-.sidebar-expanded {
-  width: 70%;
+.map.expanded {
+  .width: 70%;
 }
 
+/*.sidebar-expanded {
+  width: 70%;
+}*/
+
 @media screen and (max-width: 990px) {
-  .expanded {
+  .sidebar.expanded {
+    width: 60%;
+  }
+
+  .map.expanded {
     width: 40%;
   }
 
-  .sidebar-expanded {
+  /*.sidebar-expanded {
     width: 60%;
-  }
+  }*/
 
   .location-name {
     font-size: 1.2em;
@@ -132,13 +140,17 @@ html, body {
 }
 
 @media screen and (max-width: 500px) {
-  .expanded {
+  .sidebar.expanded {
     width: 80%;
   }
 
-  .sidebar-expanded {
+  .map.expanded {
     width: 20%;
   }
+
+  /*.sidebar-expanded {
+    width: 80%;
+  }*/
 
   .sidebar-btn-label {
     font-size: 1.2em;
